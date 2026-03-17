@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Move with Traffic Control System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <header class="header">
+    <h1>Move with Traffic Control System</h1>
+    <p>Density Based Signal Control using Canny Edge Detection</p>
+  </header>
+
+  <main class="dashboard">
+    <section class="panel">
+      <h2>Original Traffic Feed</h2>
+      <div class="video-shell">
+        <img src="{{ url_for('video_feed_original') }}" alt="Original traffic stream">
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Edge Detection Feed</h2>
+      <div class="video-shell">
+        <img src="{{ url_for('video_feed_edges') }}" alt="Edge detection stream">
+      </div>
+    </section>
+
+    <section class="status-card">
+      <div class="metrics-grid">
+        <div class="metric-row">
+          <span class="label">Traffic Density</span>
+          <span id="densityValue" class="value">0</span>
+        </div>
+
+        <div class="metric-row">
+          <span class="label">Vehicles Detected</span>
+          <span id="vehicleCountValue" class="value">0</span>
+        </div>
+
+        <div class="metric-row">
+          <span class="label">Traffic Level</span>
+          <span id="trafficLevelValue" class="value">LOW</span>
+        </div>
+
+        <div class="metric-row">
+          <span class="label">Signal Status</span>
+          <span id="signalText" class="value signal">RED SIGNAL</span>
+        </div>
+
+        <div class="metric-row">
+          <span class="label">Signal Active Time</span>
+          <span id="signalTimerValue" class="value">0 seconds</span>
+        </div>
+      </div>
+
+      <div class="traffic-light" aria-label="Traffic light indicator">
+        <span id="lightRed" class="light red active"></span>
+        <span id="lightYellow" class="light yellow"></span>
+        <span id="lightGreen" class="light green"></span>
+      </div>
+
+      <p id="errorText" class="error-text"></p>
+    </section>
+  </main>
+
+  <script>
+    function setLight(signal) {
+      const red = document.getElementById('lightRed');
+      const yellow = document.getElementById('lightYellow');
+      const green = document.getElementById('lightGreen');
+
+      red.classList.remove('active');
+      yellow.classList.remove('active');
+      green.classList.remove('active');
+
+      if (signal === 'GREEN SIGNAL') {
+        green.classList.add('active');
+      } else if (signal === 'YELLOW SIGNAL') {
+        yellow.classList.add('active');
+      } else {
+        red.classList.add('active');
+      }
+    }
+
+    async function updateStatus() {
+      try {
+        const response = await fetch('/status');
+        const data = await response.json();
+
+        document.getElementById('densityValue').textContent = data.density;
+        document.getElementById('vehicleCountValue').textContent = data.vehicle_count;
+        document.getElementById('trafficLevelValue').textContent = data.traffic_level;
+        document.getElementById('signalText').textContent = data.signal;
+        document.getElementById('signalTimerValue').textContent = `${data.signal_timer_seconds} seconds`;
+        setLight(data.signal);
+
+        const errorText = document.getElementById('errorText');
+        errorText.textContent = data.error ? data.error : '';
+      } catch (err) {
+        document.getElementById('errorText').textContent = 'Status connection lost. Retrying...';
+      }
+    }
+
+    updateStatus();
+    setInterval(updateStatus, 500);
+  </script>
+</body>
+</html>
