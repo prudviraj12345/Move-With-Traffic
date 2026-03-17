@@ -1,5 +1,6 @@
 import threading
 import time
+import os
 from pathlib import Path
 
 import cv2
@@ -247,4 +248,4 @@ def status():
 
 if __name__ == "__main__":
     processor.start()
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=False)
