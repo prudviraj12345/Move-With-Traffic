@@ -77,7 +77,8 @@ body {
   background: #1f2933;
 }
 
-.video-shell img {
+.video-shell img,
+.video-shell video {
   width: 100%;
   display: block;
   aspect-ratio: 4 / 3;
